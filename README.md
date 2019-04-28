@@ -1,4 +1,4 @@
-# Hatnotation
+# :tophat: Hatnotation
 
 > Hatnotation is short for the *Hatzakis Base 64 notation system* which is a method to encode/decode arbitrary binary strings of data, invented by Steven Hatzakis and open-sourced here under [Apache License 2.0](https://github.com/hatgit/hatnotation/blob/master/LICENSE).
 
@@ -13,7 +13,7 @@ An encoding/decoding method that allows users to compress their human-readable d
 
 ## Warning: 
 
-This software is still in its experimental phase and should not be relied upon for production. 
+This software is still in its experimental phase (including debugging, redesign and error-checking/testing) and should not be relied upon for production.  
 
 ## Background on Mnemonics (private keys) and Human vs Machine-readable code
 
@@ -21,7 +21,7 @@ Mnemonics (aka recovery phrases) are used in many popular crypto wallet applciat
 
 For example, instead of a user having to backup a string of 128 bits or their private key, they can simply store the encoded mnemonic which represents those bits or a private key. 
 
-> Note: While the word "private key" is usually associated with public/private key-pairs in cryptogrpahy, for the purpose of this Readme.md file, the use of private key refers to the master private key (initial entropy) for a crypto vault (within which accounts and private keys are dervived) which can also be considered a pre-image of the mnemonic.
+> Note: While the word "private key" is usually associated with public/private key-pairs in cryptogrpahy, for the purpose of this Readme.md file, the use of private key refers to the master private key (initial entropy) for a crypto vault (within which accounts and private keys are derived) which can also be considered a pre-image of the mnemonic.
 
 
 |                |12-word mnemonic               |24-word mnemonic             |
@@ -53,7 +53,7 @@ In terms of actual pre-image resistance, the initial entropy should be generated
 
 ## Important
 
-The Hatnotation system is *not intended to be an alternative to human-readable mnemonics*, but rather a complement and simply another representation of the machine-readable code, with the benefit of a reduction in the number of characters needed to notate and backup/store the data, using common and special characters from a library of 64 total possible characters (in range of 2^6). 
+The Hatnotation system is *not intended to be an alternative to human-readable mnemonics*, but rather a complement and simply another representation of the machine-readable code, with the benefit of a reduction in the number of characters needed to notate and backup/store the data, using common and special characters from a library of 64 total possible characters (in the zero-indexed range of 2^6-1). 
 
 
 
@@ -138,11 +138,11 @@ Using the binascii libary in python which contains the string library, we source
 43 | "101011", | "(",
 44 | "101100", | ")",
 45 | "101101", | "*",
-46 | "101110", | "+",
+46 | "101110", | '+',
 47 | "101111", | ",",
 48 | "110000", | "-",
 49 | "110001", | ".",
-50 | "110010", | "/",
+50 | "110010", | "{",
 51 | "110011", | ":",
 52 | "110100", | ";",
 53 | "110101", | "<",
@@ -151,7 +151,7 @@ Using the binascii libary in python which contains the string library, we source
 56 | "111000", | "?",
 57 | "111001", | "@",
 58 | "111010", | "[",
-59 | "111011", | "\",
+59 | "111011", | "}",
 60 | "111100", | "]",
 61 | "111101", | "^",
 62 | "111110", | "_",
@@ -159,14 +159,19 @@ Using the binascii libary in python which contains the string library, we source
 
 ## Library verification
 
-In Python version 3.7 using the strings library, the following steps can be taken to verify the library and character order and by omitting the last 4 characters "{|}~" in the fourth step below (zeroed-index values 64-67 which have been omitted from the above list as well): 
+In Python version 3.7 using the strings library, the following steps can be taken to verify the library and character order and notice that the following 4 characters are omitted "\\~/|" in the fourth step below: 
 
 - ```>>> import string```
 - ```>>> dir(string)['Formatter', 'Template', '_ChainMap', '_TemplateMetaclass', '__all__', '__builtins__', '__cached__', '__doc__', '__file__', '__loader__', '__name__', '__package__', '__spec__', '_re', '_string', 'ascii_letters', 'ascii_lowercase', 'ascii_uppercase', 'capwords', 'digits', 'hexdigits', 'octdigits', 'printable', 'punctuation', 'whitespace']```
 - ```>>> print(string.digits+string.ascii_uppercase+string.punctuation)```
 - ```0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~```
 
-(i.e. ~~```"{|}~"```~~)
+- Note, the backslash `\` and forwardslash `/`characters were swapped with opening `{` and closing `}` curly brackets in the following issue: https://github.com/hatgit/hatnotation/issues/3. 
+- The list of valid Hatnotation library characters are thus as follows: 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&'()*+,-.{:;<=>?@[}]^_`
+
+- And the following four remain excluded/reserved ~~```"\/|~"```~~).
+
+
 
 ## Requirements
 
@@ -177,9 +182,9 @@ Python 3 or higher
 
 ## Tests: 
 
-> Example Test strings: 
+> Example Test strings (note: these are not ASCII notations): 
 
-- Decode Target: `helloworld
+- Decode Target: `HELLOWORLD`
 
 - Each letter decodes to respective 6-bit group: `"010001","001110","010101","010101","011000"," ", "100000","011000","011011","010101","001101",
 
@@ -187,13 +192,37 @@ Python 3 or higher
 
 - Concatenation of both words into one string: `"010001001110010101010101011000100000011000011011010101001101"
 
-- Converted binary string to hex (can be used as starting point to encode to "helloworld": `0x44e55562061b54d`
+- Converted binary string to hex (can be used as starting point to encode to "HELLOWORLD": `0x44e55562061b54d`
+
+>The following Hex string can be fed to the encoder to print all characters in their linear order except for the first which is "0" (zero) and gets omitted: 
+
+0x108310518720928b30d38f41149351559761969b71d79f8218a39259a7a29aabb2dbafc31ef3d35db7e39eb2f3dfbf
+
+The easiest of this example can be seen using the Hatnotation library of 64 characters as the input to the decoder: 
+
+0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&'()*+,-.{:;<=>?@[}]^_`
+
+The library in binary format as a continous string: 
+
+000000000001000010000011000100000101000110000111001000001001001010001011001100001101001110001111010000010001010010010011010100010101010110010111011000011001011010011011011100011101011110011111100000100001100010100011100100100101100110100111101000101001101010101011101100101110101111110000110001110010110011110100110101110110110111111000111001111010111011111100111101111110111111
+
+The above 384-bit binary string (based on 64*6 bits) in hex is: 0x108310518720928b30d38f41149351559761969b71d79f8218a39259a7a29aabb2dbafc31ef3d35db7e39eb2f3dfbf
+
+When the above hex string is encoded back to hatnotation it loses the leading zero (or first 6 zeroes of the above binary string) resulting in it missing from the start of the resulting encoded characters: "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&'()*+,-.}:;<=>?@[{]^_`"
+
+The loss of leading zeroes has been discussed in the following issue and is common across other popular notation systems when converting from left-padded binary data: https://github.com/hatgit/hatnotation/issues/6
+
+** There can be some formatting issues in Python which affect how data is printed as noted in this committ: https://github.com/hatgit/hatnotation/commit/66727918cef8a5bdfad21051d52b9c1e483c7fbc
 
 ## Resources: 
 
 - Other base64 encoding schemes: https://en.wikipedia.org/wiki/Base64
 - Notational conventions: https://tools.ietf.org/html/rfc2822
+- Human-readable keys (1994) https://tools.ietf.org/html/rfc1751
 
 ## Roadmap/Plans:
 
+- develop a range of potential use cases 
+- potentially propose a request for comments (RFC) for consideration as a standard.
+- add error message for invalid characters (i.e. lowercase and reserved characters `\|/~`
 
